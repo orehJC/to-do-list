@@ -17,8 +17,9 @@ create policy "own select" on public.app_state for select to authenticated using
 create policy "own insert" on public.app_state for insert to authenticated with check ((select auth.uid()) = user_id);
 create policy "own update" on public.app_state for update to authenticated using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
--- анонимам — вообще ничего
+-- анонимам — вообще ничего, вошедшему пользователю — только чтение/запись (свою строку режет RLS выше)
 revoke all on public.app_state from anon;
+grant select, insert, update on public.app_state to authenticated;
 
 -- ограничение на размер, чтобы никто не забил базу мусором (5 мб с запасом)
 alter table public.app_state drop constraint if exists data_size;
