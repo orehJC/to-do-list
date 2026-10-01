@@ -14,6 +14,8 @@ export const icon = {
   plus: svg('<path d="M12 5v14M5 12h14"/>', 16),
   check: svg('<path d="m5 12.5 4.5 4.5L19 7.5"/>', 18),
   x: svg('<path d="M18 6 6 18M6 6l12 12"/>', 14),
+  play: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg>',
+  pause: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="4.5" width="4" height="15" rx="1" fill="currentColor"/><rect x="14" y="4.5" width="4" height="15" rx="1" fill="currentColor"/></svg>',
   pin: svg('<path d="M12 17v5M9 3h6l-1 6 4 4H6l4-4z"/>', 16),
   cube: `<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7z" fill="#60a5fa"/><path d="M12 12 3 7l9-5 9 5z" fill="#bfdbfe"/><path d="M12 12v10l9-5V7z" fill="#3b82f6"/></svg>`,
 };

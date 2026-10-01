@@ -1,6 +1,6 @@
 {
-  "name": "Прогресс — привычки и цели",
-  "short_name": "Прогресс",
+  "name": "прогресс — привычки и цели",
+  "short_name": "прогресс",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

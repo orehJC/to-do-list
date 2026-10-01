@@ -1,8 +1,9 @@
 import { getState, update, uid, AREAS } from '../store.js';
 import * as D from '../dates.js';
 import { esc, icon, ring, openModal, confirmClick } from '../ui.js';
+import * as L from '../logic.js';
 
-export const title = 'Цели';
+export const title = 'цели';
 
 let areaFilter = null, showDone = false;
 
@@ -18,7 +19,15 @@ function status(g, t) {
   return '<span class="tag">в процессе</span>';
 }
 
-function card(g, t) {
+const habitsOf = (s, g) => L.active(s).filter(h => h.goalId === g.id);
+
+function linked(s, g, t) {
+  const hs = habitsOf(s, g);
+  if (!hs.length) return '';
+  return `<div class="linked">${hs.map(h => `<span class="chip"><i class="dot" style="--c:${h.color}"></i>${esc(h.name)} <b>🔥${L.streak(s, h)}</b> <span class="muted">${L.pct(L.rate(s, h, D.addDays(t, -29)))}</span></span>`).join('')}</div>`;
+}
+
+function card(s, g, t) {
   const a = areaOf(g.area), p = progressOf(g);
   const left = g.deadline ? D.daysBetween(t, g.deadline) : null;
   const when = left == null ? 'без дедлайна'
@@ -27,9 +36,10 @@ function card(g, t) {
     <div class="row between"><h3>${esc(g.title)}</h3>
       <button class="pin ${g.pinned ? 'on' : ''}" data-act="pin" data-id="${g.id}" title="${g.pinned ? 'открепить' : 'в приоритеты'}">${icon.pin}</button></div>
     ${status(g, t)}
-    <div class="goal-meta"><span class="eyebrow">${a.emoji} ${a.name}</span><span class="muted sm">${g.done ? '' : when}</span></div>
+    <div class="goal-meta"><span class="eyebrow">${a.name}</span><span class="muted sm">${g.done ? '' : when}</span></div>
     <div class="progress-line big"><i style="width:${p * 100}%"></i></div>
     <div class="muted sm">${Math.round(p * 100)}%${g.milestones?.length ? ` · ${g.milestones.filter(m => m.done).length}/${g.milestones.length} этапов` : ''}</div>
+    ${linked(s, g, t)}
   </article>`;
 }
 
@@ -43,7 +53,7 @@ export function render(root) {
   root.innerHTML = `
     <section class="panel goals-head">
       ${ring(goals.length ? achieved / goals.length : 0, { size: 104, stroke: 9, label: `${achieved}/${goals.length}` })}
-      <div><div class="eyebrow">целей достигнуто</div><div class="strong">${areasUsed} из 10 сфер жизни в работе</div></div>
+      <div><div class="eyebrow">целей достигнуто</div><div class="strong">${areasUsed} из ${AREAS.length} сфер жизни в работе</div></div>
       <span class="grow"></span>
       <button class="btn primary" data-act="new">${icon.plus} новая цель</button>
     </section>
@@ -51,17 +61,17 @@ export function render(root) {
     <div class="areas">${AREAS.map(a => {
       const gs = goals.filter(g => g.area === a.id);
       return `<button class="panel area ${areaFilter === a.id ? 'on' : ''}" data-act="area" data-area="${a.id}">
-        <b>${a.emoji} ${a.name}</b><span class="muted sm">${gs.length} ${D.plural(gs.length, 'цель', 'цели', 'целей')} · ${gs.filter(g => g.done).length} достигнуто</span></button>`;
+        <b>${a.name}</b><span class="muted sm">${gs.length} ${D.plural(gs.length, 'цель', 'цели', 'целей')} · ${gs.filter(g => g.done).length} достигнуто</span></button>`;
     }).join('')}</div>
-    ${pinned.length ? `<h2 class="section-title">главные приоритеты</h2><div class="goal-list">${pinned.map(g => card(g, t)).join('')}</div>` : ''}
+    ${pinned.length ? `<h2 class="section-title">главные приоритеты</h2><div class="goal-list">${pinned.map(g => card(s, g, t)).join('')}</div>` : ''}
     <div class="row between wrap gap section-title">
-      <h2>${areaFilter ? `${areaOf(areaFilter).emoji} ${areaOf(areaFilter).name}` : 'все цели'}</h2>
+      <h2>${areaFilter ? areaOf(areaFilter).name : 'все цели'}</h2>
       <div class="row gap">
         ${areaFilter ? '<button class="btn ghost sm" data-act="area" data-area="">все сферы</button>' : ''}
         <button class="btn ghost sm" data-act="showdone">${showDone ? 'скрыть достигнутые' : 'показать достигнутые'}</button>
       </div>
     </div>
-    ${list.length ? `<div class="goal-list">${list.map(g => card(g, t)).join('')}</div>`
+    ${list.length ? `<div class="goal-list">${list.map(g => card(s, g, t)).join('')}</div>`
       : `<div class="empty panel"><p>${goals.length ? 'здесь целей нет' : 'поставь первую цель — что хочешь сделать за ближайшие месяцы?'}</p></div>`}`;
 
   root.onclick = e => {
@@ -95,7 +105,7 @@ function goalModal(g) {
     form.innerHTML = `
       <label class="field"><span>цель</span><input name="title" required maxlength="80" value="${esc(d.title)}" autocomplete="off" ${isNew ? 'autofocus' : ''}></label>
       <div class="field-row">
-        <label class="field"><span>сфера</span><select name="area">${AREAS.map(a => `<option value="${a.id}" ${a.id === d.area ? 'selected' : ''}>${a.emoji} ${a.name}</option>`).join('')}</select></label>
+        <label class="field"><span>сфера</span><select name="area">${AREAS.map(a => `<option value="${a.id}" ${a.id === d.area ? 'selected' : ''}>${a.name}</option>`).join('')}</select></label>
         <label class="field"><span>дедлайн</span><input type="date" name="deadline" value="${d.deadline || ''}"></label>
       </div>
       <label class="field"><span>зачем мне это</span><textarea name="why" rows="2" maxlength="400">${esc(d.why)}</textarea></label>
@@ -108,6 +118,8 @@ function goalModal(g) {
       </div>
       ${d.milestones.length ? '' : `<label class="field"><span>прогресс: <b class="pv">${d.progress || 0}%</b></span>
         <input type="range" name="progress" min="0" max="100" step="5" value="${d.progress || 0}"></label>`}
+      ${isNew ? '' : `<div class="field"><span>привычки к этой цели</span>
+        ${linked(getState(), g, D.today()) || '<small class="muted">пока нет. привязать можно в настройках привычки → «ведёт к цели»</small>'}</div>`}
       <div class="row gap wrap">
         <label class="check-row"><input type="checkbox" name="pinned" ${d.pinned ? 'checked' : ''}> в приоритеты</label>
         <label class="check-row"><input type="checkbox" name="done" ${d.done ? 'checked' : ''}> достигнута 🎉</label>
@@ -133,7 +145,13 @@ function goalModal(g) {
     const a = b.dataset.act, i = Number(b.dataset.i);
     if (a === 'close') return m.close();
     if (a === 'del') {
-      if (confirmClick(b)) { update(s => { s.goals = s.goals.filter(x => x.id !== g.id); }); m.close(); }
+      if (confirmClick(b)) {
+        update(s => {
+          s.goals = s.goals.filter(x => x.id !== g.id);
+          s.habits.forEach(h => { if (h.goalId === g.id) h.goalId = ''; });
+        });
+        m.close();
+      }
       return;
     }
     read();

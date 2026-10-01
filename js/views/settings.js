@@ -4,7 +4,7 @@ import * as sync from '../sync.js';
 import { esc, toast, confirmClick } from '../ui.js';
 import { seedDemo } from '../demo.js';
 
-export const title = 'Настройки';
+export const title = 'настройки';
 
 const STATUS = {
   off: 'не настроена — данные только на этом устройстве',
@@ -19,6 +19,7 @@ export function render(root) {
   const s = getState(), st = sync.getStatus(), cfg = sync.getConfig();
 
   root.innerHTML = `
+    <div class="app-name">to do list</div>
     <div class="settings">
       <section class="panel">
         <h2>синхронизация</h2>
@@ -57,6 +58,12 @@ export function render(root) {
       </section>
 
       <section class="panel">
+        <h2>задачи</h2>
+        <label class="check-row"><input type="checkbox" data-act="roll" ${s.taskRoll.on ? 'checked' : ''}> переносить невыполненные задачи на сегодня</label>
+        <p class="muted sm">в старом дне задача остаётся с пометкой «перенесено», в проценты дня она уже не считается.</p>
+      </section>
+
+      <section class="panel">
         <h2>данные</h2>
         <div class="row gap wrap">
           <button class="btn ghost" data-act="export">скачать бэкап (.json)</button>
@@ -68,13 +75,6 @@ export function render(root) {
         </div>
         <p class="muted sm">демо-данные и «стереть всё» заменяют текущие данные (и в облаке тоже, если синхра включена).</p>
       </section>
-
-      <section class="panel">
-        <h2>установить как приложение</h2>
-        <p class="muted"><b>android / chrome:</b> меню ⋮ → «добавить на главный экран».<br>
-        <b>iphone / safari:</b> кнопка «поделиться» → «на экран домой».<br>
-        <b>компьютер:</b> значок установки справа в адресной строке.</p>
-      </section>
     </div>`;
 
   root.onclick = async e => {
@@ -83,6 +83,7 @@ export function render(root) {
     const a = b.dataset.act;
     if (a === 'tok') update(s => { s.freeze.tokens = Math.max(0, Math.min(MAX_TOKENS, s.freeze.tokens + Number(b.dataset.d))); });
     else if (a === 'auto') update(s => { s.freeze.auto = b.checked; });
+    else if (a === 'roll') update(s => { s.taskRoll.on = b.checked; });
     else if (a === 'syncnow') sync.pull();
     else if (a === 'logout') sync.signOut();
     else if (a === 'export') {

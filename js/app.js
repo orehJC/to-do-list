@@ -1,5 +1,5 @@
 import { update, subscribe } from './store.js';
-import { processFreezes } from './logic.js';
+import { processFreezes, rollTasks } from './logic.js';
 import * as D from './dates.js';
 import * as sync from './sync.js';
 import { icon, toast } from './ui.js';
@@ -31,8 +31,9 @@ function render() {
   const scroll = {};
   if (!switched) view.querySelectorAll('[data-scroll-id]').forEach(el => { scroll[el.dataset.scrollId] = el.scrollLeft; });
   view.onclick = view.onchange = view.oninput = view.onkeydown = view.onsubmit = null;
+  view.onpointerdown = view.onpointerup = view.onpointercancel = view.oncontextmenu = null;
   current = name;
-  document.title = `${mod.title} · Прогресс`;
+  document.title = `${mod.title} · прогресс`;
   document.getElementById('pageTitle').textContent = mod.title;
   document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('on', a.dataset.route === name));
   mod.render(view);
@@ -55,9 +56,14 @@ sync.onStatus(st => {
 });
 
 function runFreezes() {
-  let used = 0;
-  update(s => { const r = processFreezes(s); used = r || 0; return r !== false; });
+  let used = 0, moved = 0;
+  update(s => {
+    const r = processFreezes(s), m = rollTasks(s);
+    used = r || 0; moved = m || 0;
+    return r !== false || m !== false;
+  });
   if (used) toast(`потрачено заморозок: ${used} — стрики спасены 🧊`);
+  else if (moved) toast(`перенёс на сегодня невыполненных задач: ${moved}`);
 }
 
 // сначала тянем облако, потом считаем заморозки — иначе можно перетереть свежие отметки с телефона

@@ -3,7 +3,7 @@ import * as D from '../dates.js';
 import { esc, icon, ring } from '../ui.js';
 import { lineChart } from '../charts.js';
 
-export const title = 'Задачи';
+export const title = 'задачи';
 
 const MIND = [
   { f: 'energy', l: 'энергия', c: '#f87171' },
@@ -25,9 +25,9 @@ function dayCard(s, st, i, t) {
     <header><div class="day-name">${D.WD_FULL[i]}</div><div class="muted sm">${D.fmtNum(k)}</div></header>
     ${ring(st.p, { size: 96, stroke: 9, label: Math.round(st.p * 100) + '%' })}
     <div class="eyebrow center">задачи</div>
-    <ul class="task-list">${list.map((x, j) => `<li class="task ${x.done ? 'done' : ''}">
+    <ul class="task-list">${list.map((x, j) => `<li class="task ${x.done ? 'done' : ''} ${x.moved ? 'moved' : ''}">
       <button class="cb" data-act="toggle" data-k="${k}" data-j="${j}" aria-label="выполнено">${icon.check}</button>
-      <span class="txt">${esc(x.text)}</span>
+      <span class="txt">${esc(x.text)}${x.moved ? '<small>перенесено →</small>' : x.from ? `<small>↪ с ${D.fmtShort(x.from)}</small>` : ''}</span>
       <button class="x" data-act="del" data-k="${k}" data-j="${j}" aria-label="удалить">${icon.x}</button>
     </li>`).join('')}</ul>
     <input class="add-task" data-k="${k}" placeholder="+ добавить задачу" maxlength="140" enterkeyhint="done">
@@ -40,19 +40,21 @@ function dayCard(s, st, i, t) {
         <b>${ms[m.f] ?? '–'}</b>
       </label>`).join('')}
       <div class="ms-stat"><span>выполнено</span><b class="accent">${done}</b></div>
-      <div class="ms-stat"><span>не выполнено</span><b>${list.length - done}</b></div>
+      <div class="ms-stat"><span>не выполнено</span><b>${st.n - done}</b></div>
     </div>
   </article>`;
 }
 
 export function render(root) {
   const s = getState(), t = D.today(), days = weekDays();
+  // перенесённые на другой день задачи показываем, но в проценты не считаем
   const stats = days.map(k => {
     const list = s.tasks[k] || [];
-    const done = list.filter(x => x.done).length;
-    return { k, list, done, p: list.length ? done / list.length : 0 };
+    const own = list.filter(x => !x.moved);
+    const done = own.filter(x => x.done).length;
+    return { k, list, done, n: own.length, p: own.length ? done / own.length : 0 };
   });
-  const total = stats.reduce((a, x) => a + x.list.length, 0);
+  const total = stats.reduce((a, x) => a + x.n, 0);
   const done = stats.reduce((a, x) => a + x.done, 0);
 
   root.innerHTML = `
@@ -68,7 +70,7 @@ export function render(root) {
         </div>
         <div class="week-body">
           <div class="bars">${stats.map((st, i) => `<div class="bar-col ${st.k === t ? 'is-today' : ''}">
-            <div class="bar"><i style="height:${st.list.length ? Math.max(6, st.p * 100) : 0}%"></i></div><span>${D.WD_SHORT[i]}</span></div>`).join('')}</div>
+            <div class="bar"><i style="height:${st.n ? Math.max(6, st.p * 100) : 0}%"></i></div><span>${D.WD_SHORT[i]}</span></div>`).join('')}</div>
           <div class="week-ring">${ring(total ? done / total : 0, { size: 150, stroke: 12, label: (total ? Math.round(done / total * 100) : 0) + '%' })}
             <div class="muted sm">${done} / ${total} выполнено</div></div>
         </div>

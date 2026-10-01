@@ -4,16 +4,11 @@ const KEY = 'progress-state-v1';
 export const MAX_TOKENS = 10;
 
 export const AREAS = [
-  { id: 'health', name: 'Здоровье и спорт', emoji: '💪' },
-  { id: 'career', name: 'Учёба и карьера', emoji: '📈' },
-  { id: 'money', name: 'Финансы', emoji: '💰' },
-  { id: 'relations', name: 'Друзья и семья', emoji: '🧡' },
-  { id: 'love', name: 'Любовь', emoji: '💖' },
-  { id: 'mind', name: 'Внутренний мир', emoji: '✨' },
-  { id: 'home', name: 'Дом', emoji: '🏡' },
-  { id: 'travel', name: 'Путешествия', emoji: '✈️' },
-  { id: 'fun', name: 'Хобби', emoji: '🎲' },
-  { id: 'community', name: 'Сообщество', emoji: '🌍' },
+  { id: 'health', name: 'здоровье и спорт' },
+  { id: 'career', name: 'учёба и карьера' },
+  { id: 'money', name: 'финансы' },
+  { id: 'travel', name: 'путешествия' },
+  { id: 'fun', name: 'хобби' },
 ];
 
 export const COLORS = ['#a78bfa', '#60a5fa', '#f87171', '#4ade80', '#fbbf24', '#f472b6', '#2dd4bf', '#fb923c'];
@@ -24,10 +19,14 @@ export function blank() {
   return {
     v: 1,
     updatedAt: 0,
-    habits: [],      // {id, name, color, rhythm: 'daily'|'weekly'|'monthly', target, created}
-    checks: {},      // {habitId: {'YYYY-MM-DD': 1 | 'F'}}  F = день заморожен
+    // {id, name, color, kind: 'check'|'count'|'timer'|'quit', amount, unit,
+    //  rhythm: 'daily'|'weekly'|'monthly', days: [0..6], target, time, goalId, archived, created}
+    habits: [],
+    checks: {},      // {habitId: {'YYYY-MM-DD': 1 | число | 'X' (срыв) | 'F' (заморожен)}}
+    notes: {},       // {habitId: {'YYYY-MM-DD': текст}}
     freeze: { tokens: 3, auto: true, processedTo: null, awards: {} },
-    tasks: {},       // {'YYYY-MM-DD': [{id, text, done}]}
+    tasks: {},       // {'YYYY-MM-DD': [{id, text, done, moved?, from?}]}
+    taskRoll: { on: true, processedTo: null },
     mindset: {},     // {'YYYY-MM-DD': {energy, focus, motivation}} 1..10
     goals: [],       // {id, title, area, deadline, why, milestones: [{id, text, done}], progress, pinned, done, created}
     journal: {},     // {'YYYY-MM': text}
@@ -38,6 +37,7 @@ function migrate(s) {
   const b = blank();
   const out = { ...b, ...(s || {}) };
   out.freeze = { ...b.freeze, ...(s?.freeze || {}) };
+  out.taskRoll = { ...b.taskRoll, ...(s?.taskRoll || {}) };
   return out;
 }
 

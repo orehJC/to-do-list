@@ -4,14 +4,14 @@ import * as L from '../logic.js';
 import { esc } from '../ui.js';
 import { areaChart } from '../charts.js';
 
-export const title = 'Аналитика';
+export const title = 'аналитика';
 
 let days = 30, filter = 'all', board = 'daily', jOffset = 0, saveTimer;
 const MEDALS = ['🥇', '🥈', '🥉'];
 
 function series(s) {
   const t = D.today(), ks = D.range(D.addDays(t, -(days - 1)), t);
-  const h = s.habits.find(x => x.id === filter);
+  const h = L.active(s).find(x => x.id === filter);
   return ks.map(k => ({
     label: D.fmtShort(k),
     // для одной ежедневной привычки берём скользящие 7 дней, иначе график — сплошные 0 и 100
@@ -44,11 +44,12 @@ export function render(root) {
   const lastWeek = L.avg(D.range(D.addDays(ws, -7), D.addDays(ws, -1)).map(k => L.dayRate(s, k)));
   const diff = thisWeek != null && lastWeek != null ? Math.round((thisWeek - lastWeek) * 100) : null;
 
-  const withStreak = s.habits.map(h => ({ h, n: L.streak(s, h) })).sort((a, b) => b.n - a.n);
+  const withStreak = L.active(s).map(h => ({ h, n: L.streak(s, h) })).sort((a, b) => b.n - a.n);
   const top = withStreak[0];
-  const rated = s.habits.map(h => ({ h, r: L.rate(s, h, from) })).filter(x => x.r != null);
+  const rated = L.active(s).map(h => ({ h, r: L.rate(s, h, from) })).filter(x => x.r != null);
   const weakest = [...rated].sort((a, b) => a.r - b.r)[0];
   const lb = rated.filter(x => x.h.rhythm === board).sort((a, b) => b.r - a.r);
+  const strong = L.active(s).map(h => ({ h, v: L.strength(s, h) })).sort((a, b) => b.v - a.v);
   const maxStreak = Math.max(1, ...withStreak.map(x => x.n));
 
   const jm = D.addDays(D.monthStart(t), 0);
@@ -56,15 +57,15 @@ export function render(root) {
   const jKey = D.key(jDate).slice(0, 7);
   const jStart = jKey + '-01', jEnd = D.monthEnd(jStart) < t ? D.monthEnd(jStart) : t;
   const jRate = jStart <= t ? L.avg(D.range(jStart, jEnd).map(k => L.dayRate(s, k))) : null;
-  const jBest = s.habits.map(h => ({ h, r: L.rate(s, h, jStart, jEnd) })).filter(x => x.r != null).sort((a, b) => b.r - a.r)[0];
-  const jTasks = D.range(jStart, D.monthEnd(jStart)).flatMap(k => s.tasks[k] || []);
+  const jBest = L.active(s).map(h => ({ h, r: L.rate(s, h, jStart, jEnd) })).filter(x => x.r != null).sort((a, b) => b.r - a.r)[0];
+  const jTasks = D.range(jStart, D.monthEnd(jStart)).flatMap(k => s.tasks[k] || []).filter(x => !x.moved);
 
   root.innerHTML = `
     <section class="panel big-chart">
       <div class="row between wrap gap">
         <div><div class="eyebrow">общая стабильность${filter === 'all' ? ' · ежедневные привычки' : ''}</div><div class="huge">${L.pct(overall)}</div></div>
         <div class="row gap wrap">
-          <select data-set="filter"><option value="all">все привычки</option>${s.habits.map(h => `<option value="${h.id}" ${filter === h.id ? 'selected' : ''}>${esc(h.name)}</option>`).join('')}</select>
+          <select data-set="filter"><option value="all">все привычки</option>${L.active(s).map(h => `<option value="${h.id}" ${filter === h.id ? 'selected' : ''}>${esc(h.name)}</option>`).join('')}</select>
           <select data-set="days">${[7, 30, 90, 365].map(n => `<option value="${n}" ${days === n ? 'selected' : ''}>${n === 365 ? 'за год' : `последние ${n} дней`}</option>`).join('')}</select>
         </div>
       </div>
@@ -91,6 +92,13 @@ export function render(root) {
           <div class="progress-line"><i style="width:${x.n / maxStreak * 100}%"></i></div></div></li>`).join('') || '<li class="muted">пока пусто</li>'}</ol>
       </section>
     </div>
+    <section class="panel">
+      <div class="row between wrap gap"><div class="eyebrow">сила привычек</div>
+        <span class="muted sm">растёт с каждым выполнением, от одного пропуска почти не падает</span></div>
+      <ol class="rank">${strong.length ? strong.map(x => `<li><i class="dot" style="--c:${x.h.color}"></i>
+        <div class="grow"><div class="row between"><b>${esc(x.h.name)}</b><span class="accent">${Math.round(x.v * 100)}%</span></div>
+        <div class="progress-line"><i style="width:${x.v * 100}%"></i></div></div></li>`).join('') : '<li class="muted">пока пусто</li>'}</ol>
+    </section>
     <section class="panel">
       <div class="eyebrow">последние полгода</div>
       ${heatmap(s, t)}

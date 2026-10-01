@@ -1,2 +1,7 @@
 node_modules/
 *.log
+
+.impeccable/
+шрифты.html
+шрифты.png
+превью-*.png
