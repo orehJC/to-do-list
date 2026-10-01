@@ -3,6 +3,6 @@
 // anon key публичный по задумке — чужие данные закрыты политиками RLS из supabase.sql.
 // service_role ключ сюда НЕ вставлять никогда.
 export default {
-  SUPABASE_URL: '',
-  SUPABASE_ANON_KEY: '',
+  SUPABASE_URL: 'https://lvpivfxuljyqhwsmgbmw.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_51NtsUmXygkaw1645p1Ndg_JOYLo0gk',
 };

@@ -1,5 +1,5 @@
 // сначала сеть (чтобы всегда была свежая версия), без сети — из кэша
-const CACHE = 'progress-v1';
+const CACHE = 'progress-v2';
 const SHELL = [
   './', 'index.html', 'config.js', 'css/style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png',
   'js/app.js', 'js/store.js', 'js/dates.js', 'js/logic.js', 'js/ui.js', 'js/charts.js', 'js/sync.js', 'js/demo.js',

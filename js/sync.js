@@ -4,7 +4,7 @@ import CONFIG from '../config.js';
 import { getState, replaceState, subscribe } from './store.js';
 
 const CFG_KEY = 'progress-sync-cfg';
-const LIB = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+const LIB = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js';
 
 let client = null, user = null, status = 'off', msg = '', timer = null, running = null, again = false;
 const listeners = new Set();
