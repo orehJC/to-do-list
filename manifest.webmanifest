@@ -1,6 +1,7 @@
 {
-  "name": "прогресс — привычки и цели",
-  "short_name": "прогресс",
+  "name": "to do list",
+  "short_name": "to do list",
+  "description": "привычки, задачи и цели — в одном спокойном месте",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -33,7 +33,7 @@ function render() {
   view.onclick = view.onchange = view.oninput = view.onkeydown = view.onsubmit = null;
   view.onpointerdown = view.onpointerup = view.onpointercancel = view.oncontextmenu = null;
   current = name;
-  document.title = `${mod.title} · прогресс`;
+  document.title = `${mod.title} · to do list`;
   document.getElementById('pageTitle').textContent = mod.title;
   document.querySelectorAll('#nav a').forEach(a => a.classList.toggle('on', a.dataset.route === name));
   mod.render(view);

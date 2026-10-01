@@ -1,7 +1,7 @@
 // сначала сеть (чтобы всегда была свежая версия), без сети — из кэша
-const CACHE = 'progress-v7';
+const CACHE = 'progress-v8';
 const SHELL = [
-  './', 'index.html', 'config.js', 'css/style.css', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png',
+  './', 'index.html', 'config.js', 'css/style.css', 'manifest.webmanifest', 'icons/icon-16.png', 'icons/icon-32.png', 'icons/icon-48.png', 'icons/icon-180.png', 'icons/icon-192.png',
   'js/app.js', 'js/store.js', 'js/dates.js', 'js/logic.js', 'js/ui.js', 'js/charts.js', 'js/sync.js', 'js/demo.js', 'js/habit-modals.js',
   'js/views/today.js', 'js/views/habits.js', 'js/views/tasks.js', 'js/views/goals.js', 'js/views/insights.js', 'js/views/settings.js',
 ];
