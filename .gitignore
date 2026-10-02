@@ -1,9 +1,4 @@
-node_modules/
+﻿node_modules/
 *.log
-
 .impeccable/
-шрифты.html
-шрифты.png
-превью-*.png
-лого.html
 ассеты.html
